@@ -4,6 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+prompt-toolkit = "*"
+pyads = {editable = true, path = "."}
+typing = "*"
 
 [dev-packages]
 sphinx = "*"
@@ -12,3 +15,8 @@ tox = "*"
 pytest = "*"
 coverage = "*"
 ptpython = "*"
+recommonmark = "*"
+sphinx-rtd-theme = "*"
+twine = "*"
+pytest-cov = "*"
+click = "*"

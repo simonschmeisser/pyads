@@ -1,8 +1,8 @@
 pyads - Python package
 ======================
 
-[![Build Status](https://travis-ci.org/MrLeeh/pyads.svg?branch=master)](https://travis-ci.org/MrLeeh/pyads)
-[![Coverage Status](https://coveralls.io/repos/github/MrLeeh/pyads/badge.svg?branch=master)](https://coveralls.io/github/MrLeeh/pyads?branch=master)
+[![Build Status](https://travis-ci.org/stlehmann/pyads.svg?branch=master)](https://travis-ci.org/stlehmann/pyads)
+[![Coverage Status](https://coveralls.io/repos/github/stlehmann/pyads/badge.svg?branch=master)](https://coveralls.io/github/stlehmann/pyads?branch=master)
 [![Documentation Status](https://readthedocs.org/projects/pyads/badge/?version=latest)](http://pyads.readthedocs.io/en/latest/?badge=latest)
 [![PyPI version](https://badge.fury.io/py/pyads.svg)](https://badge.fury.io/py/pyads)
 
@@ -33,7 +33,7 @@ $ python setup.py install
 
 ## Creating routes
 
-ADS uses its own address system named AmsNetId to identify devices. The 
+ADS uses its own address system named AmsNetId to identify devices. The
 assignment of a devices to an AmsNetId happens via routing. Routing
 is handled differently on Windows and Linux.
 
@@ -46,7 +46,7 @@ Open a port and create a AmsAddr object for the remote machine.
 >>> pyads.open_port()
 32828
 ```
-Add a route to the remote machine (Linux only - Windows routes must be 
+Add a route to the remote machine (Linux only - Windows routes must be
 added in the TwinCat Router UI).
 
 ```python
@@ -54,16 +54,16 @@ added in the TwinCat Router UI).
 >>> adr = pyads.AmsAddr('127.0.0.1.1.1', pyads.PORT_SPS1)
 >>> pyads.add_route(adr, remote_ip)
 ```
-Get the AMS address of the local machine. This may need to be added to 
-the routing table of the remote machine. 
-**NOTE: On Linux machines at least one route must be added before the call 
+Get the AMS address of the local machine. This may need to be added to
+the routing table of the remote machine.
+**NOTE: On Linux machines at least one route must be added before the call
 to `get_local_address()` will function properly.**
 
 ### Creating routes on Windows
 
 On Windows you don't need to manually add the routes with pyads but instead you
-use the TwinCAT Router UI (TcSystemManager) which comes with the TwinCAT 
-installation. Have a look at the TwinCAT documentation 
+use the TwinCAT Router UI (TcSystemManager) which comes with the TwinCAT
+installation. Have a look at the TwinCAT documentation
 [infosys.beckhoff.com TcSystemManager][0] for further details.
 
 ## Testserver
@@ -73,7 +73,7 @@ the *pyads* package. To start it up simply run the following command from
 a separate console window.
 
 ```bash
-$ python -m pyads.testerver
+$ python -m pyads.testserver
 
 ```
 
@@ -87,7 +87,7 @@ the route to the testserver needs to be added from another python console.
 >>> pyads.add_route(adr, '127.0.0.1')
 ```
 
-## Usage 
+## Usage
 
 ### Connect to a remote device
 
@@ -139,9 +139,9 @@ Read and write *UDINT* variables by address.
 >>> plc = pyads.Connection('127.0.0.1.1.1', pyads.PORT_SPS1)
 >>> plc.open()
 >>> # write 65536 to memory byte MDW0
->>> plc.write(INDEXGROUP_MEMORYBYTE, 0, 65536, pyads.PLCTYPE_UDINT)
+>>> plc.write(pyads.INDEXGROUP_MEMORYBYTE, 0, 65536, pyads.PLCTYPE_UDINT)
 >>> # write memory byte MDW0
->>> plc.read(INDEXGROUP_MEMORYBYTE, 0, pyads.PLCTYPE_UDINT)
+>>> plc.read(pyads.INDEXGROUP_MEMORYBYTE, 0, pyads.PLCTYPE_UDINT)
 65536
 >>> plc.close()
 ```
@@ -150,53 +150,43 @@ Toggle bitsize variables by address.
 
 ```python
 >>> # read memory bit MX100.0
->>> data = plc.read(INDEXGROUP_MEMORYBIT, 100*8 + 0, pyads.PLCTYPE_BOOL)
+>>> data = plc.read(pyads.INDEXGROUP_MEMORYBIT, 100*8 + 0, pyads.PLCTYPE_BOOL)
 >>> # write inverted value to memory bit MX100.0
->>> plc.write(INDEXGROUP_MEMORYBIT, 100*8 + 0, not data)
+>>> plc.write(pyads.INDEXGROUP_MEMORYBIT, 100*8 + 0, not data)
 ```
 
-# Changelog
+### Simple handling of notification callbacks
 
-## Version 2.2.1
+To make the handling of notifications more Pythonic a notification decorator has
+been introduced in version 2.2.4. This decorator takes care of converting the
+ctype values transfered via ADS to python datatypes.
 
-Improved support for Device Notifications.
+```python
+>>> import pyads
+>>> plc = pyads.Connection('127.0.0.1.1.1', 48898)
+>>> plc.open()
+>>>
+>>> @plc.notification(pyads.PLCTYPE_INT)
+>>> def callback(handle, name, timestamp, value):
+>>>     print(
+>>>         '{0}: received new notitifiction for variable "{1}", value: {2}'
+>>>         .format(name, timestamp, value)
+>>>     )
+>>>
+>>> handles = plc.add_device_notification('GVL.intvar',
+                                          pyads.NotificationAttrib(2), callback)
+>>> # Write to the variable to trigger a notification
+>>> plc.write_by_name('GVL.intvar', 123, pyads.PLCTYPE_INT)
 
-Add a `callback` decorator to make value extraction from Device Notifications 
-more pythonic.
+2017-10-01 10:41:23.640000: received new notitifiction for variable "GVL.intvar", value: abc
 
-## Version 2.2.0
+>>> # remove notification
+>>> plc.del_device_notification(handles)
 
-Include shared library for Linux ADS communication. No manual installation
-necessary anymore.
+```
 
-`Connection` class to allow a more convenient object oriented workflow. Each
-device connection is now an object with methods for reading, writing, ... 
-However it is still possible to use the old-style functional approach.
-
-Added device notifications. Device notifications can now be used to monitor
-values on the PLC. On certain changes callbacks can be used to react. Thanks
-to the great implementation by Peter Janeck.
-
-## Version 2.1.0
-Linux support!
-
-Pyads now has Linux compatibility by wrapping the [open source ADS library](https://github.com/dabrowne/ADS) provided by Beckhoff. The main API is identical on both Linux and Windows, however the Linux implementation includes a built in router which needs to be managed programmatically using `pyads.add_route(ams_address, ip_address)` and `pyads.delete_route(ams_address)`.
-
-Version 2.1.0 also features vastly improved test coverage of the API, and the addition of a dummy test server for full integration testing.
-
-## Version 2.0.0
-
-I wanted to make the Wrapper more pythonic so I created a new module named
-pyads.ads that contains all the functions from pyads.pyads but in a more
-pythonic way. You can still access the old functions by using the pyads.pyads
-module.
-
-Improvements:
-
-* more pythonic function names (e.g. 'write' instead of 'adsSyncWrite')
-* easier handling of reading and writing Strings
-* no error codes, if errors occur an Exception with the error code will be
-raised
+The notification callback works for all basic plc datatypes but not for arrays
+or structures.
 
 
 [0]: https://infosys.beckhoff.de/english.php?content=../content/1033/TcSystemManager/Basics/TcSysMgr_AddRouteDialog.htm&id=

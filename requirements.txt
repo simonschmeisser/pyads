@@ -1,0 +1,6 @@
+-i https://pypi.python.org/simple
+-e .
+prompt-toolkit==2.0.7
+six==1.11.0
+typing==3.6.6
+wcwidth==0.1.7

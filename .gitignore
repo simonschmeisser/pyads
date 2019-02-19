@@ -10,6 +10,7 @@ MANIFEST
 
 build/
 *.egg-info/
+.eggs/
 venv/
 
 *.tox
@@ -30,3 +31,8 @@ doc/_build/
 # coverage files
 .coverage
 htmlcov/
+deploy
+
+coverage
+.mypy_cache/
+.pytest_cache/

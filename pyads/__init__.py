@@ -1,11 +1,23 @@
-#!-*- coding: utf-8 -*-
-# from .pyads import *
+# -*- coding: utf-8 -*-
+"""The pyads package.
+
+:author: Stefan Lehmann <stlm@posteo.de>
+:license: MIT, see license file or https://opensource.org/licenses/MIT
+
+:created on: 2018-06-11 18:15:53
+:last modified by: Stefan Lehmann
+:last modified time: 2018-11-08 07:59:47
+
+"""
 from .structs import AmsAddr, NotificationAttrib
 
 from .ads import open_port, close_port, get_local_address, read_state, \
     write_control, read_device_info, write, read_write, read, \
     read_by_name, write_by_name, add_route, delete_route, \
-    add_device_notification, del_device_notification, Connection
+    add_device_notification, del_device_notification, Connection, \
+    set_local_address, set_timeout
+
+from .pyads_ex import ADSError
 
 from .constants import PLCTYPE_BOOL, PLCTYPE_BYTE, PLCTYPE_DATE, \
     PLCTYPE_DINT, PLCTYPE_DT, PLCTYPE_DWORD, PLCTYPE_INT, PLCTYPE_LREAL, \
@@ -16,7 +28,8 @@ from .constants import PLCTYPE_BOOL, PLCTYPE_BYTE, PLCTYPE_DATE, \
 
 from .constants import PORT_EVENTLOGGER, PORT_IO, PORT_LOGGER, PORT_NC, \
     PORT_NOCKE, PORT_SCOPE, PORT_SPECIALTASK1, PORT_SPECIALTASK2, PORT_SPS1, \
-    PORT_SPS2, PORT_SPS3, PORT_SPS4, PORT_SYSTEMSERVICE
+    PORT_SPS2, PORT_SPS3, PORT_SPS4, PORT_SYSTEMSERVICE, \
+	PORT_CAM, PORT_TC2PLC1, PORT_TC2PLC2, PORT_TC2PLC3, PORT_TC2PLC4, PORT_TC3PLC1
 
 from .constants import INDEXGROUP_MEMORYBYTE, INDEXGROUP_MEMORYBIT, \
     INDEXGROUP_MEMORYSIZE, INDEXGROUP_RETAIN, INDEXGROUP_RETAINSIZE, \
@@ -31,4 +44,4 @@ from .constants import ADSSTATE_INVALID, ADSSTATE_IDLE, ADSSTATE_RESET, \
 from .constants import ADSTRANS_NOTRANS, ADSTRANS_CLIENTCYCLE, \
     ADSTRANS_CLIENT1REQ, ADSTRANS_SERVERCYCLE, ADSTRANS_SERVERONCHA
 
-__version__ = '2.2.1'
+__version__ = '3.0.5'

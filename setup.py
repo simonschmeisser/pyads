@@ -15,11 +15,14 @@ from distutils.command.sdist import sdist as _sdist
 
 
 def read(*names, **kwargs):
-    with io.open(
-        os.path.join(os.path.dirname(__file__), *names),
-        encoding=kwargs.get("encoding", "utf8")
-    ) as fp:
-        return fp.read()
+    try:
+        with io.open(
+            os.path.join(os.path.dirname(__file__), *names),
+            encoding=kwargs.get("encoding", "utf8")
+        ) as fp:
+            return fp.read()
+    except IOError:
+        return ''
 
 
 def find_version(*file_paths):
@@ -33,7 +36,7 @@ def find_version(*file_paths):
 
 def platform_is_linux():
     return sys.platform.startswith('linux') or \
-           sys.platform.startswith('darwin')
+        sys.platform.startswith('darwin')
 
 
 def get_files_rec(directory):
@@ -107,7 +110,8 @@ class PyTest(TestCommand):
 
     def initialize_options(self):
         TestCommand.initialize_options(self)
-        self.pytest_args = []
+        self.pytest_args = ['--cov-report', 'html', '--cov-report', 'term',
+                            '--cov=pyads']
 
     def finalize_options(self):
         TestCommand.finalize_options(self)
@@ -129,15 +133,21 @@ cmdclass = {
 }
 
 
+long_description = read('README.md')
+
+
 setup(
     name="pyads",
     version=find_version('pyads', '__init__.py'),
     description="Python wrapper for TwinCAT ADS library",
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     author="Stefan Lehmann",
     author_email="Stefan.St.Lehmann@gmail.com",
-    packages=["pyads"],
+    packages=["pyads", "pyads.testserver_ex"],
     package_data={'pyads': ['adslib.so']},
     requires=[],
+    install_requires=['typing'],
     provides=['pyads'],
     url='https://github.com/MrLeeh/pyads',
     classifiers=[
@@ -151,5 +161,6 @@ setup(
         'Operating System :: Microsoft :: Windows :: Windows 7'
     ],
     cmdclass=cmdclass,
-    data_files=data_files
+    data_files=data_files,
+    tests_require=['pytest', 'pytest-cov'],
 )

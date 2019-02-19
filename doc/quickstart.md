@@ -44,7 +44,7 @@ the *pyads* package. To start it up simply run the following command from
 a separate console window.
 
 ```bash
-$ python -m pyads.testerver
+$ python -m pyads.testserver
 
 ```
 
@@ -137,7 +137,7 @@ can be seen here:
 
 ```python
 >>> import pyads
->>> from ctypes import size_of
+>>> from ctypes import sizeof
 >>>
 >>> # define the callback which extracts the value of the variable
 >>> def callback(addr, notification, user_handle):
@@ -192,6 +192,51 @@ def callbackString(adr, notification, user):
         memmove(addressof(dest), addressof(contents.data), contents.cbSampleSize)
         # Remove nullbytes
         var = str(bytearray(dest)).split('\x00')[0]
+```
+
+#### Device Notification callback
+
+To make the handling of notifications more pythonic a notification decorator has
+been introduced in version 2.2.4. This decorator takes care of converting the
+ctype values transfered via ADS to python datatypes.
+
+```python
+>>> import pyads
+>>> plc = pyads.Connection('127.0.0.1.1.1', 48898)
+>>> plc.open()
+>>>
+>>> @plc.notification(pyads.PLCTYPE_INT)
+>>> def callback(handle, name, timestamp, value):
+>>>     print(
+>>>         '{0}: received new notitifiction for variable "{1}", value: {2}'
+>>>         .format(name, timestamp, value)
+>>>     )
+>>>
+>>> plc.add_device_notification('GVL.intvar', pyads.NotificationAttrib(2),
+                                callback)
+>>> # Write to the variable to trigger a notification
+>>> plc.write_by_name('GVL.intvar', 123, pyads.PLCTYPE_INT)
+
+2017-10-01 10:41:23.640000: received new notitifiction for variable "GVL.intvar", value: abc
+
+```
+
+The notification callback works for all basic plc datatypes but not for
+arrays. Since version 3.0.5 the `ctypes.Structure` datatype is supported. Find
+an example below:
+
+```python
+>>> class TowerEvent(Structure):
+>>>     _fields_ = [
+>>>         ("Category", c_char * 21),
+>>>         ("Name", c_char * 81),
+>>>         ("Message", c_char * 81)
+>>>     ]
+>>>
+>>> @plc.notification(TowerEvent)
+>>> def callback(handle, name, timestamp, value):
+>>>     print(f'Received new event notification for {name}.Message = {value.Message}')
+
 ```
 
 [0]: https://infosys.beckhoff.de/english.php?content=../content/1033/TcSystemManager/Basics/TcSysMgr_AddRouteDialog.htm&id=

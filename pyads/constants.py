@@ -1,16 +1,32 @@
 # -*- coding: utf-8 -*-
+"""Constants for the work with the ADS API.
+
+:author: Stefan Lehmann <stlm@posteo.de>
+:license: MIT, see license file or https://opensource.org/licenses/MIT
+
+:created on 2018-06-11 18:15:53
+:last modified by: Stefan Lehmann
+:last modified time: 2018-07-12 14:33:30
+
 """
-    pyads.constants
-    ~~~~~~~~~~~~~~~
-
-    Constants for the work with the ADS API.
-
-    :copyright: © 2013 by Stefan Lehmann
-    :license: MIT, see LICENSE for details
-
-"""
-from ctypes import c_bool, c_byte, c_int8, c_uint8, c_int16, c_uint16, \
-    c_int32, c_uint32, c_float, c_double, c_char, c_short
+from typing import Type
+from ctypes import (
+    Array,
+    c_bool,
+    c_byte,
+    c_int8,
+    c_uint8,
+    c_int16,
+    c_uint16,
+    c_int32,
+    c_uint32,
+    c_float,
+    c_double,
+    c_char,
+    c_short,
+    c_int64,
+    c_uint64,
+)
 
 STRING_BUFFER = 1024
 
@@ -32,25 +48,37 @@ PLCTYPE_UDINT = c_uint32
 PLCTYPE_UINT = c_uint16
 PLCTYPE_USINT = c_uint8
 PLCTYPE_WORD = c_uint16
+PLCTYPE_LINT = c_int64
+PLCTYPE_ULINT = c_uint64
 
 
 def PLCTYPE_ARR_REAL(n):
+    # type: (int) -> Type[Array[c_float]]
+    """Return an array with n float values."""
     return c_float * n
 
 
 def PLCTYPE_ARR_LREAL(n):
+    # type: (int) -> Type[Array[c_double]]
+    """Return an array with n double values."""
     return c_double * n
 
 
 def PLCTYPE_ARR_INT(n):
+    # type: (int) -> Type[Array[c_int16]]
+    """Return an array with n int16 values."""
     return c_int16 * n
 
 
 def PLCTYPE_ARR_DINT(n):
+    # type: (int) -> Type[Array[c_int32]]
+    """Return an array with n int32 values."""
     return c_int32 * n
 
 
 def PLCTYPE_ARR_SHORT(n):
+    # type: (int) -> Type[Array[c_short]]
+    """Return an array with n short values."""
     return c_short * n
 
 
@@ -58,7 +86,9 @@ def PLCTYPE_ARR_SHORT(n):
 # READ_M - WRITE_M
 INDEXGROUP_MEMORYBYTE = 0x4020  #: plc memory area (%M), offset means byte-offset
 # READ_MX - WRITE_MX
-INDEXGROUP_MEMORYBIT = 0x4021  #: plc memory area (%MX), offset means the bit adress, calculatedb by bytenumber * 8 + bitnumber
+INDEXGROUP_MEMORYBIT = (
+    0x4021
+)  #: plc memory area (%MX), offset means the bit adress, calculatedb by bytenumber * 8 + bitnumber  # noqa: E501
 # PLCADS_IGR_RMSIZE
 INDEXGROUP_MEMORYSIZE = 0x4025  #: size of the memory area in bytes
 # PLCADS_IGR_RWRB
@@ -87,17 +117,17 @@ ADSIGRP_SYM_DOWNLOAD = 0xF00A
 ADSIGRP_SYM_UPLOAD = 0xF00B
 ADSIGRP_SYM_UPLOADINFO = 0xF00C
 
-ADSIGRP_SYMNOTE = 0xF010  # notification of named handle
-ADSIGRP_IOIMAGE_RWIB = 0xF020  # read/write input byte(s)
-ADSIGRP_IOIMAGE_RWIX = 0xF021  # read/write input bit
-ADSIGRP_IOIMAGE_RWOB = 0xF030  # read/write output byte(s)
-ADSIGRP_IOIMAGE_RWOX = 0xF031  # read/write output bit
-ADSIGRP_IOIMAGE_CLEARI = 0xF040  # write inputs to null
-ADSIGRP_IOIMAGE_CLEARO = 0xF050  # write outputs to null
+ADSIGRP_SYMNOTE = 0xF010  #: notification of named handle
+ADSIGRP_IOIMAGE_RWIB = 0xF020  #: read/write input byte(s)
+ADSIGRP_IOIMAGE_RWIX = 0xF021  #: read/write input bit
+ADSIGRP_IOIMAGE_RWOB = 0xF030  #: read/write output byte(s)
+ADSIGRP_IOIMAGE_RWOX = 0xF031  #: read/write output bit
+ADSIGRP_IOIMAGE_CLEARI = 0xF040  #: write inputs to null
+ADSIGRP_IOIMAGE_CLEARO = 0xF050  #: write outputs to null
 
-ADSIGRP_DEVICE_DATA = 0xF100  # state, name, etc...
-ADSIOFFS_DEVDATA_ADSSTATE = 0x0000  # ads state of device
-ADSIOFFS_DEVDATA_DEVSTATE = 0x0002  # device state
+ADSIGRP_DEVICE_DATA = 0xF100  #: state, name, etc...
+ADSIOFFS_DEVDATA_ADSSTATE = 0x0000  #: ads state of device
+ADSIOFFS_DEVDATA_DEVSTATE = 0x0002  #: device state
 
 
 # PORTS
@@ -111,7 +141,13 @@ PORT_SPS1 = 801
 PORT_SPS2 = 811
 PORT_SPS3 = 821
 PORT_SPS4 = 831
+PORT_TC2PLC1 = PORT_SPS1
+PORT_TC2PLC2 = PORT_SPS2
+PORT_TC2PLC3 = PORT_SPS3
+PORT_TC2PLC4 = PORT_SPS4
+PORT_TC3PLC1 = 851
 PORT_NOCKE = 900
+PORT_CAM = PORT_NOCKE
 PORT_SYSTEMSERVICE = 10000
 PORT_SCOPE = 14000
 
