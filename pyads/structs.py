@@ -8,23 +8,19 @@
 :last modified time: 2018-07-12 14:33:11
 
 """
-import typing
-from ctypes import c_byte, c_short, Structure, c_ubyte, c_ushort, c_ulong, \
-    c_ulonglong, POINTER, Union, c_uint32, c_uint64
+
+from ctypes import Structure, Union, c_ubyte, c_uint16, c_uint32, c_uint64
+
 from .constants import ADSTRANS_SERVERONCHA
 
 
 class SAdsVersion(Structure):
     """Struct containing ADS version information."""
 
-    _fields_ = [
-        ("version", c_byte),
-        ("revision", c_byte),
-        ("build", c_short)
-    ]
+    _fields_ = [("version", c_ubyte), ("revision", c_ubyte), ("build", c_uint16)]
 
 
-class AdsVersion():
+class AdsVersion:
     """Contains version number, revision number, build number of the ADS-DLL.
 
     :ivar int version: version number
@@ -57,12 +53,11 @@ class SAmsAddr(Structure):
     """Struct containing the netId and port of an ADS device."""
 
     _pack_ = 1
-    _fields_ = [("netId", SAmsNetId),
-                ("port", c_ushort)]
+    _fields_ = [("netId", SAmsNetId), ("port", c_uint16)]
 
 
 class AmsAddr(object):
-    """Wrapper for SAmsAddr-structure to adress an ADS device.
+    """Wrapper for SAmsAddr-structure to address an ADS device.
 
     :type _ams_addr: SAmsAddr
     :ivar _ams_addr: ctypes-structure SAmsAddr
@@ -89,7 +84,7 @@ class AmsAddr(object):
         """Textual representation of the AMS address.
 
         :rtype: string
-        :return:  textual representation of the AMS adress
+        :return:  textual representation of the AMS address
         """
         return self.netid + ": " + str(self._ams_addr.port)
 
@@ -103,21 +98,21 @@ class AmsAddr(object):
         it can be passed as a String or as a SAmsNetId struct.
 
         """
-        return '.'.join(map(str, self._ams_addr.netId.b))
+        return ".".join(map(str, self._ams_addr.netId.b))
 
     @netid.setter
     def netid(self, value):
-        # type: (typing.Union[str, SAmsNetId]) -> None
+        # type: (Union[str, SAmsNetId]) -> None
         # Check if the value is already an instance of the SAmsNetId struct
         if isinstance(value, SAmsNetId):
             self._ams_addr.netId = value
 
         # Otherwise, attempt to parse the id as a string
         else:
-            id_numbers = list(map(int, value.split('.')))
+            id_numbers = list(map(int, value.split(".")))
 
             if len(id_numbers) != 6:
-                raise ValueError('no valid netid')
+                raise ValueError("no valid netid")
 
             # Fill the netId struct with data
             self._ams_addr.netId.b = (c_ubyte * 6)(*id_numbers)
@@ -132,7 +127,7 @@ class AmsAddr(object):
     @port.setter
     def port(self, value):
         # type: (int) -> None
-        self._ams_addr.port = c_ushort(value)
+        self._ams_addr.port = c_uint16(value)
 
     def amsAddrStruct(self):
         # type: () -> SAmsAddr
@@ -146,7 +141,7 @@ class AmsAddr(object):
 
     def setAdr(self, adrString):
         # type: (str) -> None
-        """Set the AMS-adress according to the given IP-address.
+        """Set the AMS-address according to the given IP-address.
 
         :type adrString: string
         :param adrString: ip-address of an ADS device
@@ -157,14 +152,15 @@ class AmsAddr(object):
     def __repr__(self):
         # type: () -> str
         """Return object name."""
-        return '<AmsAddress {}:{}>'.format(self.netid, self.port)
+        return "<AmsAddress {}:{}>".format(self.netid, self.port)
 
 
 class NotificationAttrib(object):
     """Notification Attribute."""
 
-    def __init__(self, length, trans_mode=ADSTRANS_SERVERONCHA,
-                 max_delay=1e-4, cycle_time=1e-4):
+    def __init__(
+        self, length, trans_mode=ADSTRANS_SERVERONCHA, max_delay=1e-4, cycle_time=1e-4
+    ):
         # type: (int, int, float, float) -> None
         """Create a new NotificationAttrib object.
 
@@ -247,9 +243,9 @@ class NotificationAttrib(object):
     def __repr__(self):
         # type: () -> str
         """Return object name."""
-        return ('<NotificationAttrib {} {} {} {}>'
-                .format(self.length, self.trans_mode, self.max_delay,
-                        self.cycle_time))
+        return "<NotificationAttrib {} {} {} {}>".format(
+            self.length, self.trans_mode, self.max_delay, self.cycle_time
+        )
 
 
 class _AttribUnion(Union):
@@ -261,30 +257,42 @@ class SAdsNotificationAttrib(Structure):
 
     _pack_ = 1
     _anonymous_ = ("AttribUnion",)
-    _fields_ = [("cbLength", c_uint32),
-                ("nTransMode", c_uint32),
-                ("nMaxDelay", c_uint32),
-                ("AttribUnion", _AttribUnion), ]
+    _fields_ = [
+        ("cbLength", c_uint32),
+        ("nTransMode", c_uint32),
+        ("nMaxDelay", c_uint32),
+        ("AttribUnion", _AttribUnion),
+    ]
 
 
+# noinspection PyUnresolvedReferences
 class SAdsNotificationHeader(Structure):
-    """C structure representation of AdsNotificationHeader."""
+    """C structure representation of AdsNotificationHeader.
+
+    :ivar hNotification: notification handle
+    :ivar nTimeStamp: time stamp in FILETIME format
+    :ivar cbSampleSize: number of data bytes
+    :ivar data: variable-length data field, get via ctypes.addressof + offset
+
+    """
 
     _pack_ = 1
-    _fields_ = [("hNotification", c_uint32),
-                ("nTimeStamp", c_uint64),
-                ("cbSampleSize", c_uint32),
-                ("data", POINTER(c_ubyte))]
+    _fields_ = [
+        ("hNotification", c_uint32),
+        ("nTimeStamp", c_uint64),
+        ("cbSampleSize", c_uint32),
+        ("data", c_ubyte),
+    ]
 
 
 class SAdsSymbolUploadInfo(Structure):
     """C structure representation of AdsSymbolUploadInfo."""
 
     _pack_ = 1
-    _fields_ = [("nSymbols", c_ulong),
-                ("nSymSize", c_ulong)]
+    _fields_ = [("nSymbols", c_uint32), ("nSymSize", c_uint32)]
 
 
+# noinspection PyUnresolvedReferences
 class SAdsSymbolEntry(Structure):
     """ADS symbol information.
 
@@ -298,15 +306,82 @@ class SAdsSymbolEntry(Structure):
     :ivar typeLength: length of type name
     :ivar commentLength: length of comment
 
+    A complete example could be:
+
+        value: 57172            # Current value
+        info.entryLength: 88    # Total storage space for this symbol
+        info.iGroup: 16448      # Group index
+        info.iOffs: 385000      # Offset index inside group
+        info.size: 2            # Number of bytes needed for the value
+        info.dataType: 18       # Symbol type, in this case
+                                  constants.ADST_UINT16 (18)
+        info.flags: 8           # TwinCAT byte flags
+        info.nameLength: 11     # Number of characters in the name
+        info.typeLength: 4      # Number of characters in the PLC string
+                                  representation of the type
+        info.commentLength: 20  # Number of characters in the comment
+        info.stringBuffer: <pyads.structs.c_ubyte_Array_768 object>
+                                # Concatenation of all string info
+        bytes(info.stringBuffer): b'GVL.counter\x00UINT\x00 Counter (in '
+                                  'pulses)\x00\x95\x19\x07\x18\x00\x00\x00\x00'
+        bytes(info.stringBuffer).encode(): "GVL.counter UINT Counter (in
+                                            pulses)"
+
+        info.name: "GVL.counter"    # The name section from the buffer
+        info.symbol_type: "UINT"    # The symbol_type section from the
+                                      buffer
+        info.comment: " Counter (in pulses)"  # The comment (if any)
     """
 
     _pack_ = 1
-    _fields_ = [("entryLength", c_ulong),
-                ("iGroup", c_ulong),
-                ("iOffs", c_ulong),
-                ("size", c_ulong),
-                ("dataType", c_ulong),
-                ("flags", c_ulong),
-                ("nameLength", c_ushort),
-                ("typeLength", c_ushort),
-                ("commentLength", c_ushort)]
+    _fields_ = [
+        ("entryLength", c_uint32),
+        ("iGroup", c_uint32),
+        ("iOffs", c_uint32),
+        ("size", c_uint32),
+        ("dataType", c_uint32),
+        ("flags", c_uint32),
+        ("nameLength", c_uint16),
+        ("typeLength", c_uint16),
+        ("commentLength", c_uint16),
+        ("stringBuffer", c_ubyte * (256 * 3)),
+        # 3 strings contained, with max length 256 each
+    ]
+
+    def _get_string(self, offset, length):
+        # type: (int, int) -> str
+        """Get portion of the bigger string buffer"""
+        return bytes(self.stringBuffer[offset:(offset + length)])\
+                    .decode("utf-8")
+
+    @property
+    def name(self):
+        # type: () -> str
+        """The symbol name."""
+        return self._get_string(0, self.nameLength)
+
+    @property
+    def symbol_type(self):
+        # type: () -> str
+        """The qualified type name, including the namespace."""
+        return self._get_string(self.nameLength + 1, self.typeLength)
+
+    @property
+    def comment(self):
+        # type: () -> str
+        """User-defined comment."""
+        return self._get_string(
+            self.nameLength + self.typeLength + 2, self.commentLength
+        )
+
+
+class SAdsSumRequest(Structure):
+    """ADS sum request structure.
+
+    :ivar iGroup: indexGroup of request
+    :ivar iOffs: indexOffset of request
+    :ivar size: size of request
+    """
+
+    _pack_ = 1
+    _fields_ = [("iGroup", c_uint32), ("iOffset", c_uint32), ("size", c_uint32)]

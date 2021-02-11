@@ -24,7 +24,6 @@ README.rst
 *so
 
 .cache/
-ADS/
 doc_old/
 doc/_build/
 
@@ -36,3 +35,6 @@ deploy
 coverage
 .mypy_cache/
 .pytest_cache/
+
+# vscode files
+.vscode/

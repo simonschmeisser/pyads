@@ -1,5 +1,5 @@
 language: python
-dist: trusty
+dist: xenial
 
 addons:
   apt:
@@ -7,13 +7,13 @@ addons:
     - git
 
 python:
-  - "2.7"
-  - "3.5"
   - "3.6"
+  - "3.7"
+  - "3.8"
 
 # command to install dependencies
 install:
-  - git clone https://github.com/dabrowne/ADS.git
+  - git clone https://github.com/stlehmann/ADS.git
   - cd ADS
   - sudo make install
   - cd ..

@@ -1,11 +1,14 @@
 #! /usr/bin/env python
 # -*-coding: utf-8 -*-
 import io
+import glob
 import os
 import re
 import sys
 import shutil
 import subprocess
+import functools
+import operator
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
 from setuptools.command.install import install as _install
@@ -47,20 +50,30 @@ def get_files_rec(directory):
     return res
 
 
-data_files = get_files_rec('src')
+data_files = get_files_rec('adslib')
 
 
 def create_binaries():
-    subprocess.call(['make', '-C', 'src'])
+    subprocess.call(['make', '-C', 'adslib'])
 
 
 def remove_binaries():
-    subprocess.call(['make', 'clean', '-C', 'src'])
+    """Remove all binary files in the adslib directory."""
+    patterns = (
+        "adslib/*.a",
+        "adslib/*.o",
+        "adslib/obj/*.o",
+        "adslib/*.bin",
+        "adslib/*.so",
+    )
+
+    for f in functools.reduce(operator.iconcat, [glob.glob(p) for p in patterns]):
+        os.remove(f)
 
 
 def copy_sharedlib():
     try:
-        shutil.copy('src/adslib.so', 'pyads/adslib.so')
+        shutil.copy('adslib/adslib.so', 'pyads/adslib.so')
     except OSError:
         pass
 
@@ -147,18 +160,21 @@ setup(
     packages=["pyads", "pyads.testserver_ex"],
     package_data={'pyads': ['adslib.so']},
     requires=[],
-    install_requires=['typing'],
+    install_requires=[],
     provides=['pyads'],
     url='https://github.com/MrLeeh/pyads',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Topic :: Software Development :: Libraries',
         'Operating System :: Microsoft :: Windows',
-        'Operating System :: Microsoft :: Windows :: Windows 7'
+        'Operating System :: Microsoft :: Windows :: Windows 7',
+        'Operating System :: POSIX :: Linux',
     ],
     cmdclass=cmdclass,
     data_files=data_files,
