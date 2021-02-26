@@ -1342,6 +1342,50 @@ class Connection(object):
 
         return contents.hNotification, timestamp, value
 
+    def add_route_to_target(
+        self,
+        target_username: str,
+        target_password: str,
+        adding_hostname: str = None,
+        adding_netid: str = None,
+        route_name: str = None,
+    ) -> bool:
+        """Add a new route to the connected target (PLC).
+
+        :param str target_username: username for target (plc)
+        :param str target_password: password for target (plc)
+        :param str adding_hostname: hostname or IP of the client being added, defaults to the system hostname
+        :param str adding_netid: AMS NetID of the client being added to the target, defaults to client_netid
+        :param str route_name: PLC side name for route, defaults to adding_host_name or the current hostname of this PC
+
+        :rtype: bool
+        :return: True if route was added
+
+        """
+        # if no hostname is provided use local hostname
+        if adding_hostname is None:
+            adding_hostname = socket.gethostname()
+
+        # try to get the local address
+        adr = get_local_address()
+        if adr is None:
+            raise ValueError("The netid of the client is None. Use set_local_address to set it.")
+        local_netid = adr.netid
+
+        # if no netid is provided use local netid
+        if adding_netid is None:
+            adding_netid = local_netid
+
+        return adsAddRouteToPLC(
+            local_netid,
+            adding_hostname,
+            self.ip_address,
+            target_username,
+            target_password,
+            route_name=route_name,
+            added_net_id=adding_netid,
+        )
+
 
 def _dict_slice_generator(dict_: Dict[Any, Any], size: int) -> Iterator[Dict[Any, Any]]:
     """Generator for slicing a dictionary into parts of size long."""
