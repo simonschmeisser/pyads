@@ -5,8 +5,9 @@
 :created on: 2018-06-11 18:15:53
 
 """
-import struct
 import itertools
+import socket
+import struct
 from collections import OrderedDict
 from ctypes import (
     memmove,
